@@ -1,9 +1,9 @@
 import os
 
+import argparse
 import cv2
 import numpy as np
 import torch
-from torchvision.transforms import ToTensor
 
 from Network.SDCNet import SDCNet_VGG16_classify
 
@@ -82,5 +82,9 @@ def main(video_path):
 
 
 if __name__ == "__main__":
-    # pass the video path to main
-    main(video_path)
+    
+    parser = argparse.ArgumentParser("S-DCNet: Spatial Divide-and-Conquer Crowd Counting")
+    parser.add_argument("--video", "-v", type=str, required=True, help="The video path to crowd count")
+    args = parser.parse_args()
+
+    main(args.video)
