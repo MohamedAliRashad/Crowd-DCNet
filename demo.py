@@ -8,11 +8,9 @@ import torch
 from Network.SDCNet import SDCNet_VGG16_classify
 
 
-def main(video_path):
+def main(model_path, video_path):
 
-    model_list = {0: 'model/SHA', 1: 'model/SHB'}
     cap = cv2.VideoCapture(video_path)
-    # cv2.namedWindow("frame", cv2.WND_PROP_FULLSCREEN)
 
     # --1.2 use initial setting to generate
     # set label_indice
@@ -20,32 +18,25 @@ def main(video_path):
     add = np.array([1e-6, 0.05, 0.10, 0.15, 0.20,
                     0.25, 0.30, 0.35, 0.40, 0.45])
     label_indice = np.concatenate((add, label_indice))
-    # print(len(label_indice))
 
     # init networks
     label_indice = torch.Tensor(label_indice)
     class_num = len(label_indice)+1
-    # print(class_num)
+
     div_times = 2
     net = SDCNet_VGG16_classify(
         class_num, label_indice, load_weights=True).cuda()
 
-    # test the exist trained model
-    mod_path = 'best_epoch.pth'
-    repo_path = os.path.join(
-        os.environ["HOME"], "Work/GitHub_Projects/S-DCNet")
-    abs_path = os.path.join(repo_path, model_list[0])
-    mod_path = os.path.join(abs_path, mod_path)
-
-    if os.path.exists(mod_path):
-        all_state_dict = torch.load(mod_path)
+    if os.path.exists(model_path):
+        print("Adding Weights ....")
+        all_state_dict = torch.load(model_path)
         net.load_state_dict(all_state_dict['net_state_dict'])
         net.eval()
     else:
         print("Can't find trained weights!!")
         exit()
 
-    first_frame = True
+    # first_frame = True
     while cap.isOpened():
         flag, image = cap.read()
         output_image = np.copy(image)
@@ -84,7 +75,8 @@ def main(video_path):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser("S-DCNet: Spatial Divide-and-Conquer Crowd Counting")
+    parser.add_argument("model", type=str, help="Pretrained weights")
     parser.add_argument("--video", "-v", type=str, required=True, help="The video path to crowd count")
     args = parser.parse_args()
 
-    main(args.video)
+    main(args.model, args.video)
