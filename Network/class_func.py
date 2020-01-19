@@ -47,13 +47,13 @@ def Count2Class(count_map,label_indice):
 
 # Func3: convert class (0->c-1) to count number
 def Class2Count(pre_cls,label_indice): 
-    '''
-    # --Input:
-    # 1.pre_cls is class label range in [0,1,2,...,C-1]
-    # 2.label_indice not include 0 but the other points
-    # --Output:
-    # 1.count value, the same size as pre_cls
-    '''   
+    """
+    Input:
+        pre_cls is class label range in [0,1,2,...,C-1]
+        label_indice not include 0 but the other points
+    Output:
+        count value, the same size as pre_cls
+    """   
     if isinstance(label_indice,np.ndarray):
         label_indice = torch.from_numpy(label_indice)
     label_indice = label_indice.squeeze()
@@ -82,15 +82,3 @@ def Class2Count(pre_cls,label_indice):
 
     return pre_counts
 
-
-if __name__ == '__main__':
-    pre_cls = torch.Tensor([[0,1,2],[3,4,4]])
-    label_indice =torch.Tensor([0.5,1,1.5,2]) 
-
-    pre_counts = Class2Count(pre_cls,label_indice)
-    print(pre_cls)
-    print(label_indice)
-    print(pre_counts)
-
-    pre_cls = Count2Class(pre_counts,label_indice)
-    print(pre_cls)
