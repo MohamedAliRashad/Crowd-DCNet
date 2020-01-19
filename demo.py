@@ -6,9 +6,10 @@ import numpy as np
 import torch
 
 from Network.SDCNet import SDCNet_VGG16_classify
+from Network.SSDCNet import SSDCNet_classify
 
 
-def main(model_path, video_path):
+def main(model_path, video_path, SDCNet=False):
 
     cap = cv2.VideoCapture(video_path)
 
@@ -24,8 +25,15 @@ def main(model_path, video_path):
     class_num = len(label_indice)+1
 
     div_times = 2
-    net = SDCNet_VGG16_classify(
-        class_num, label_indice, load_weights=True).cuda()
+
+    if SDCNet:
+        net = SDCNet_VGG16_classify(
+            class_num, label_indice, load_weights=True).cuda()
+    else:
+        net = SSDCNet_classify(class_num, label_indice, div_times=div_times,
+                               frontend_name='VGG16', block_num=5,
+                               IF_pre_bn=False, IF_freeze_bn=False, load_weights=True,
+                               parse_method='maxp').cuda()
 
     if os.path.exists(model_path):
         print("Adding Weights ....")
@@ -36,7 +44,7 @@ def main(model_path, video_path):
         print("Can't find trained weights!!")
         exit()
 
-    # first_frame = True
+    first_frame = True
     while cap.isOpened():
         flag, image = cap.read()
         output_image = np.copy(image)
@@ -44,9 +52,13 @@ def main(model_path, video_path):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         else:
             break
-        # if first_frame:
-        #     image = cv2.selectROI("frame", image, False, False)
-        image = cv2.resize(image, (512, 512))
+        if first_frame:
+            roi = cv2.selectROI("frame", image, False, False)
+            first_frame = False
+            # print(roi)
+
+        image = image[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
+        image = cv2.resize(image, (256, 256))
 
         image = np.transpose(image, (2, 0, 1))
         image = torch.Tensor(image[None, :, :, :])
@@ -57,9 +69,13 @@ def main(model_path, video_path):
             features = net(image)
             div_res = net.resample(features)
             merge_res = net.parse_merge(div_res)
-            outputs = merge_res['div'+str(net.args['div_times'])]
-            del merge_res
+            if SDCNet:
+                outputs = merge_res['div'+str(net.args['div_times'])]
+            else:
+                outputs = merge_res['div'+str(net.div_times)]
 
+            del merge_res
+        cv2.rectangle(output_image, (int(roi[0]), int(roi[1])), (int(roi[0]+roi[2]), int(roi[1]+roi[3])), (255, 0, 0), thickness=3)
         cv2.putText(output_image, "{}".format(int(outputs.sum().item())),
                     (30, 50), cv2.FONT_HERSHEY_PLAIN, 2,
                     (255, 0, 0), 3)
@@ -73,10 +89,11 @@ def main(model_path, video_path):
 
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser("S-DCNet: Spatial Divide-and-Conquer Crowd Counting")
     parser.add_argument("model", type=str, help="Pretrained weights")
     parser.add_argument("--video", "-v", type=str, required=True, help="The video path to crowd count")
+    parser.add_argument("--SDCNet", action='store_true', default=False, help="Check it if you want to use SDCNet")
     args = parser.parse_args()
 
-    main(args.model, args.video)
+    main(args.model, args.video, SDCNet=args.SDCNet)
