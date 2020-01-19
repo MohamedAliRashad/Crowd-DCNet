@@ -7,7 +7,7 @@ Crowd Counting application based on S-DCNet
 - Download the pretrained weights from
 [Google Drive](https://drive.google.com/open?id=1gK-aqEpWm2io11_CBzCX3F0EVJcFju25).
 - Extract the **models** folder into the Repo directory.
-- Run ```python3 demo.py -v <video_path>``` to use the script.
+- Run ```python3 demo.py <pretrained_weights> -v <video_path>``` to use the script.
 
 ## Future Work
 - [ ] Add ROI (Region of Interest) feaure.
