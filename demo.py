@@ -53,30 +53,47 @@ def main(model_path, video_path, SDCNet=False):
         else:
             break
         if first_frame:
-            roi = cv2.selectROI("frame", image, False, False)
+            rois = cv2.selectROIs("frame", image, False, False)
             first_frame = False
             # print(roi)
 
-        image = image[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
-        image = cv2.resize(image, (256, 256))
+        sum = 0
+        for roi in rois:
+            roi_image = image[int(roi[1]):int(roi[1]+roi[3]),
+                          int(roi[0]):int(roi[0]+roi[2])]
 
-        image = np.transpose(image, (2, 0, 1))
-        image = torch.Tensor(image[None, :, :, :])
+            roi_image = cv2.resize(roi_image, (256, 256))
 
-        if torch.cuda.is_available():
-            image = image.cuda()
-        with torch.no_grad():
-            features = net(image)
-            div_res = net.resample(features)
-            merge_res = net.parse_merge(div_res)
-            if SDCNet:
-                outputs = merge_res['div'+str(net.args['div_times'])]
-            else:
-                outputs = merge_res['div'+str(net.div_times)]
+            roi_image = np.transpose(roi_image, (2, 0, 1))
+            roi_image = torch.Tensor(roi_image[None, :, :, :])
+            # w = image.shape[-1]
+            # h = image.shape[-2]
+            # pad_w = 64 - w%64
+            # padding_left = int(pad_w/2)
+            # padding_right = pad_w - padding_left
+            # pad_h = 64 - h%64
+            # padding_top = int(pad_h/2)
+            # padding_bottom = pad_h - padding_top
+            # image = torch.nn.functional.pad(image, (padding_left, padding_right, padding_top, padding_bottom))
 
-            del merge_res
-        cv2.rectangle(output_image, (int(roi[0]), int(roi[1])), (int(roi[0]+roi[2]), int(roi[1]+roi[3])), (255, 0, 0), thickness=3)
-        cv2.putText(output_image, "{}".format(int(outputs.sum().item())),
+            if torch.cuda.is_available():
+                roi_image = roi_image.cuda()
+            with torch.no_grad():
+                features = net(roi_image)
+                div_res = net.resample(features)
+                merge_res = net.parse_merge(div_res)
+                if SDCNet:
+                    outputs = merge_res['div'+str(net.args['div_times'])]
+                else:
+                    outputs = merge_res['div'+str(net.div_times)]
+
+                del merge_res
+
+            cv2.rectangle(output_image, (int(roi[0]), int(roi[1])), (int(
+                roi[0]+roi[2]), int(roi[1]+roi[3])), (255, 0, 0), thickness=3)
+            sum += int(outputs.sum().item())
+
+        cv2.putText(output_image, "{}".format(sum),
                     (30, 50), cv2.FONT_HERSHEY_PLAIN, 2,
                     (255, 0, 0), 3)
 
@@ -90,10 +107,13 @@ def main(model_path, video_path, SDCNet=False):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser("S-DCNet: Spatial Divide-and-Conquer Crowd Counting")
+    parser = argparse.ArgumentParser(
+        "S-DCNet: Spatial Divide-and-Conquer Crowd Counting")
     parser.add_argument("model", type=str, help="Pretrained weights")
-    parser.add_argument("--video", "-v", type=str, required=True, help="The video path to crowd count")
-    parser.add_argument("--SDCNet", action='store_true', default=False, help="Check it if you want to use SDCNet")
+    parser.add_argument("--video", "-v", type=str,
+                        required=True, help="The video path to crowd count")
+    parser.add_argument("--SDCNet", action='store_true',
+                        default=False, help="Check it if you want to use SDCNet")
     args = parser.parse_args()
 
     main(args.model, args.video, SDCNet=args.SDCNet)
