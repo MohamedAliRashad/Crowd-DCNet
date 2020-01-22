@@ -1,18 +1,20 @@
 # Crowd-DCNet
-Crowd Counting application based on S-DCNet
+Crowd Counting application based on S-DCNet & [SS-DCNet](https://github.com/xhp-hust-2018-2011/SS-DCNet)
 
 ## How To Use
 - Run this to have all your dependencies installed
 ```pip3 install -r requirements.txt --user```.
-- Download the pretrained weights from
-[Google Drive](https://drive.google.com/open?id=1gK-aqEpWm2io11_CBzCX3F0EVJcFju25).
+- Download the S-DCNet pretrained weights from
+[Google Drive](https://drive.google.com/open?id=1gK-aqEpWm2io11_CBzCX3F0EVJcFju25) or the SS-DCNet from [Here](https://drive.google.com/drive/folders/1TRJr9YuP1dFpnbQvSSQHqIqhLFdElo_Q) (SHA weights are the only one tested).
 - Extract the **models** folder into the Repo directory.
 - Run ```python3 demo.py <pretrained_weights> -v <video_path>``` to use the script.
 
+**Note**: SS-DCNet will work by default, if the user wish to use S-DCNet just add ```--SDCNet``` to the python3 running command.
+
 ## Future Work
-- [ ] Add ROI (Region of Interest) feaure.
+- [x] Add ROI (Region of Interest) feaure.
 - [ ] Optimize the code for faster inference.
-- [ ] Upgrade to SS-DCNet.
+- [x] Upgrade to SS-DCNet.
 - [ ] Make a Dockerfile of the project for easy deployment.
 
 ## :sparkles: Huge thanks for the real heroes [here](https://github.com/xhp-hust-2018-2011/S-DCNet):sparkles:
