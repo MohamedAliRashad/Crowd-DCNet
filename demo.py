@@ -1,4 +1,5 @@
 import os
+from termcolor import colored
 
 import argparse
 import cv2
@@ -7,11 +8,18 @@ import torch
 
 from Network.SDCNet import SDCNet_VGG16_classify
 from Network.SSDCNet import SSDCNet_classify
+from utils import VideoStream
 
 
-def main(model_path, video_path, SDCNet=False):
+def main(model_path, input_source, SDCNet=False):
 
-    cap = cv2.VideoCapture(video_path)
+    if os.path.isfile(input_source):
+        video_name = input_source.split("/")[-1]
+        video_path = input_source.replace(video_name,"")
+        print("Processing video {} in {}".format(colored(video_name, 'red'), colored(video_path, 'green')))
+        cap = cv2.VideoCapture(input_source)
+    else:
+        cap = VideoStream(input_source).start()
 
     # --1.2 use initial setting to generate
     # set label_indice
@@ -45,22 +53,22 @@ def main(model_path, video_path, SDCNet=False):
         exit()
 
     first_frame = True
-    while cap.isOpened():
+    while True:
         flag, image = cap.read()
         output_image = np.copy(image)
-        if flag:
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        else:
-            break
         if first_frame:
             rois = cv2.selectROIs("frame", image, False, False)
             first_frame = False
             # print(roi)
+        if flag:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        else:
+            break
 
         sum = 0
         for roi in rois:
             roi_image = image[int(roi[1]):int(roi[1]+roi[3]),
-                          int(roi[0]):int(roi[0]+roi[2])]
+                              int(roi[0]):int(roi[0]+roi[2])]
 
             roi_image = cv2.resize(roi_image, (256, 256))
 
@@ -111,9 +119,16 @@ if __name__ == "__main__":
         "S-DCNet: Spatial Divide-and-Conquer Crowd Counting")
     parser.add_argument("model", type=str, help="Pretrained weights")
     parser.add_argument("--video", "-v", type=str,
-                        required=True, help="The video path to crowd count")
+                        default=None, help="The video path to crowd count")
+    parser.add_argument("--cap", "-c", type=int,
+                        default=0, help="The video path to crowd count")
     parser.add_argument("--SDCNet", action='store_true',
                         default=False, help="Check it if you want to use SDCNet")
     args = parser.parse_args()
 
-    main(args.model, args.video, SDCNet=args.SDCNet)
+    if args.video:
+        input_source = args.video
+    else:
+        input_source = args.cap
+
+    main(args.model, input_source, SDCNet=args.SDCNet)
