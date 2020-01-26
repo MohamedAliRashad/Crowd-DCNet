@@ -11,7 +11,8 @@ Crowd Counting application based on S-DCNet & [SS-DCNet](https://github.com/xhp-
 - Choose ROIs by hitting Space or Enter after every selecton and when finished hit ESC (but be warned that this has a great hit on the speed).
 
 **Note**: SS-DCNet will work by default, if the user wish to use S-DCNet just add ```--SDCNet``` to the python3 running command.
-
+## News
+- **26 Jan 2020** Add Camera Support & Threading for faster fetching ...... you can add ```--cap``` then specify the camera number (default=0) and the script will work online (press q to Quit)
 ## Future Work
 - [x] Add ROI (Region of Interest) feaure.
 - [ ] Optimize the code for faster inference.
