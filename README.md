@@ -8,6 +8,7 @@ Crowd Counting application based on S-DCNet & [SS-DCNet](https://github.com/xhp-
 [Google Drive](https://drive.google.com/open?id=1gK-aqEpWm2io11_CBzCX3F0EVJcFju25) or the SS-DCNet from [Here](https://drive.google.com/drive/folders/1TRJr9YuP1dFpnbQvSSQHqIqhLFdElo_Q) (SHA weights are the only one tested).
 - Extract the **models** folder into the Repo directory.
 - Run ```python3 demo.py <pretrained_weights> -v <video_path>``` to use the script.
+- Choose ROIs by hitting Space or Enter after every selecton and when finished hit ESC (but be warned that this has a great hit on the speed).
 
 **Note**: SS-DCNet will work by default, if the user wish to use S-DCNet just add ```--SDCNet``` to the python3 running command.
 
