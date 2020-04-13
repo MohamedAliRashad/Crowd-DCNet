@@ -15,7 +15,7 @@ Crowd Counting application based on S-DCNet & [SS-DCNet](https://github.com/xhp-
 - **26 Jan 2020** Add Camera Support & Threading for faster fetching ...... you can add ```--cap``` then specify the camera number (default=0) and the script will work online (press q to Quit)
 ## Future Work
 - [x] Add ROI (Region of Interest) feaure.
-- [ ] Optimize the code for faster inference.
+- [x] Optimize the code for faster inference.
 - [x] Upgrade to SS-DCNet.
 - [ ] Make a Dockerfile of the project for easy deployment.
 
